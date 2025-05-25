@@ -52,3 +52,4 @@ class JServo:
         lgpio.tx_pwm(self.h, self.pin, self.frequency, 0)
         lgpio.gpiochip_close(self.h)
         print("Servo cleanup complete")
+#hello
