@@ -15,7 +15,7 @@ class JMotor:
         self.INR2 = 16
         self.ENR = 21
         self.speed = 5
-        self.speed_ms = 1.8667
+        self.speed_ms = 11.33
         
 
         # Open GPIO chip
