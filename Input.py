@@ -17,6 +17,7 @@ while True:
     sleep(1)
     motor.cleanup()
     print("done")
+    print ("hi")
     break 
     
 
