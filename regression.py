@@ -1,3 +1,6 @@
+import statsmodels.api as sm
+import numpy as np
+
 def simulate(car, max_seconds=3):
 
     print("go forward")
