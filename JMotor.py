@@ -7,15 +7,16 @@ import numpy as np
 
 class JMotor:
     def __init__(self):
-        # Motor control pins
+        
         self.INL1 = 17
         self.INL2 = 27
         self.ENL = 22
         self.INR1 = 20
         self.INR2 = 16
         self.ENR = 21
-        self.speed = 5
-        self.speed_ms = 11.33
+        self.speed = 5 #set speed (1-10 > percent duty cycle*10)
+        self.speed_ms = 11.33 # conversion factor
+        self.current_dir = None 
         
 
         # Open GPIO chip
@@ -25,12 +26,11 @@ class JMotor:
         for pin in [self.INL1, self.INL2, self.ENL, self.INR1, self.INR2, self.ENR]:
             lgpio.gpio_claim_output(self.h, pin, 0)
 
-        # Enable PWM at 50% duty cycle
+        # Enable PWM 
         self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, self.speed*10) 
         self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, self.speed*10)
 
-        # Initialize encoder reader
-       # self.encoder = EncoderReader(self.h)
+     
     def set_speed(self, speed):
         self.speed = speed
         self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, self.speed*10) 
@@ -38,33 +38,35 @@ class JMotor:
 
 
     def forward(self):
-        # Set encoder directions forward
-        #self.encoder.set_direction(True)
-
-        # Drive both motors forward
+       
         lgpio.gpio_write(self.h, self.INL1, 1)
         lgpio.gpio_write(self.h, self.INL2, 0)
         lgpio.gpio_write(self.h, self.INR1, 1)
         lgpio.gpio_write(self.h, self.INR2, 0)
+        
+        self.current_dir = "forward"
 
     def backward(self):
-        # Set encoder directions backward
-       # self.encoder.set_direction(False)
-
-        # Drive both motors backward
+        
         lgpio.gpio_write(self.h, self.INL1, 0)
         lgpio.gpio_write(self.h, self.INL2, 1)
         lgpio.gpio_write(self.h, self.INR1, 0)
         lgpio.gpio_write(self.h, self.INR2, 1)
+        
+        self.current_dir = "backward"
 
     def instant_stop(self): 
-
-        lgpio.gpio_write(self.h, self.INL1, 0)
-        lgpio.gpio_write(self.h, self.INL2, 1)
-        lgpio.gpio_write(self.h, self.INR1, 0)
-        lgpio.gpio_write(self.h, self.INR2, 1)
-        time.sleep(0.001*self.speed)
         
+        if self.current_dir == "forward":
+            self.backward()
+
+        elif self.current_dir == "backward":
+            self.forward()
+            
+        else: 
+            pass
+            
+        time.sleep(0.001*self.speed)
         self.stop()
         self.set_speed(0)
 
