@@ -10,7 +10,7 @@ class JMotor:
         self.INR1 = 20
         self.INR2 = 16
         self.ENR = 21
-        self.speed = 5 #set speed (1-10 > percent duty cycle*10)
+        self.speed = 50 #percent duty cycle
         self.speed_ms = 1.2 # conversion factor
         self.current_dir = None 
         
@@ -23,14 +23,14 @@ class JMotor:
             lgpio.gpio_claim_output(self.h, pin, 0)
 
         # Enable PWM 
-        self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, self.speed*10) 
-        self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, self.speed*10)
+        self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, self.speed) 
+        self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, self.speed)
 
      
     def set_speed(self, speed):
         self.speed = speed
-        self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, self.speed*10) 
-        self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, self.speed*10)
+        self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, self.speed) 
+        self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, self.speed)
 
 
     def forward(self):
@@ -69,17 +69,16 @@ class JMotor:
 
 
     def cleanup(self):
-        # Stop motors
         lgpio.gpio_write(self.h, self.INL1, 0)
         lgpio.gpio_write(self.h, self.INL2, 0)
         lgpio.gpio_write(self.h, self.INR1, 0)
         lgpio.gpio_write(self.h, self.INR2, 0)
 
-        #Stop PWM
+        #stop PWM
         lgpio.tx_pwm(self.h, self.ENL, 0, 0.0)
         lgpio.tx_pwm(self.h, self.ENR, 0, 0.0)
 
-        # Close GPIO chip
+        #close chip
         lgpio.gpiochip_close(self.h)
 
     def stop(self):

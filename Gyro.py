@@ -45,3 +45,15 @@ class Gyro:
         print(self.format_vector("Linear Acceleration", self.sensor.linear_acceleration))
         print(self.format_vector("Gravity Vector", self.sensor.gravity))
         time.sleep(1)
+        
+    def desired_turn(self, target_degrees):
+        start_angle = self.get_angle()
+    
+        while True:
+            current_angle = self.get_angle()
+            theta = (current_angle - start_angle + 360) % 360
+            
+            if theta >= target_degrees:
+                break
+            
+            time.sleep(0.01)  
