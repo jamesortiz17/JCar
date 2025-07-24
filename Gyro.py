@@ -34,16 +34,14 @@ class Gyro:
             heading_deg += 360
         return heading_deg
 
-gyro = Gyro()
-
-while True:
-    print("="*40)
-    print("Temperature:", gyro.sensor.temperature, "°C")
-    print(gyro.format_vector("Accelerometer", gyro.sensor.acceleration))
-    print(gyro.format_vector("Magnetometer", gyro.sensor.magnetic))
-    print(gyro.format_vector("Gyroscope", gyro.sensor.gyro))
-    print(gyro.format_vector("Euler Angles", gyro.sensor.euler))
-    print(gyro.format_vector("Quaternion", gyro.sensor.quaternion))
-    print(gyro.format_vector("Linear Acceleration", gyro.sensor.linear_acceleration))
-    print(gyro.format_vector("Gravity Vector", gyro.sensor.gravity))
-    time.sleep(1)
+    def print_vals(self):
+        
+        print("Temperature:", self.sensor.temperature, "°C")
+        print(self.format_vector("Accelerometer", self.sensor.acceleration))
+        print(self.format_vector("Magnetometer", self.sensor.magnetic))
+        print(self.format_vector("Gyroscope", self.sensor.gyro))
+        print(self.format_vector("Euler Angles", self.sensor.euler))
+        print(self.format_vector("Quaternion", self.sensor.quaternion))
+        print(self.format_vector("Linear Acceleration", self.sensor.linear_acceleration))
+        print(self.format_vector("Gravity Vector", self.sensor.gravity))
+        time.sleep(1)

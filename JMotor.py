@@ -93,21 +93,21 @@ class JMotor:
         
         lgpio.gpio_write(self.h, self.INL1, 1)
         lgpio.gpio_write(self.h, self.INL2, 0)
-        self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, 3) 
+        self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, 30) 
         
         lgpio.gpio_write(self.h, self.INR1, 0)
         lgpio.gpio_write(self.h, self.INR2, 1)
-        self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, 5)
+        self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, 50)
         
     def turn_left(self):
         
         lgpio.gpio_write(self.h, self.INL1, 0)
         lgpio.gpio_write(self.h, self.INL2, 1)
-        self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, 5) 
+        self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, 50) 
         
         lgpio.gpio_write(self.h, self.INR1, 1)
         lgpio.gpio_write(self.h, self.INR2, 0)
-        self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, 3)
+        self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, 30)
         
     
         

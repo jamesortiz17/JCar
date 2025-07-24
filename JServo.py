@@ -2,13 +2,13 @@ import lgpio
 from time import sleep
 
 class JServo:
-    def __init__(self, pin=17, frequency=50, tick=50):
+    def __init__(self, pin=15, frequency=50, tick=50):
         self.pin = pin
         self.frequency = frequency
         self.tick = tick  # tick in microseconds for pulse width adjustment
         self.middle_pulse = 1500  # 1.5 ms pulse (center)
-        self.maxleft_pulse = 2000  # 2.0 ms pulse (full left)
-        self.maxright_pulse = 1000  # 1.0 ms pulse (full right)
+        self.maxleft_pulse = 2500  # 2.0 ms pulse (full left)
+        self.maxright_pulse = 500  # 1.0 ms pulse (full right)
 
         self.pulse_width = self.middle_pulse
 
@@ -49,7 +49,6 @@ class JServo:
     def cleanup(self):
         self.center()
         sleep(0.5)
-        lgpio.tx_pwm(self.h, self.pin, self.frequency, 0)
+        #lgpio.tx_pwm(self.h, self.pin, self.frequency, 0)
         lgpio.gpiochip_close(self.h)
         print("Servo cleanup complete")
-#hello
