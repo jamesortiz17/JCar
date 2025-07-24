@@ -11,7 +11,7 @@ class JMotor:
         self.INR2 = 16
         self.ENR = 21
         self.speed = 5 #set speed (1-10 > percent duty cycle*10)
-        self.speed_ms = 11.33 # conversion factor
+        self.speed_ms = 1.2 # conversion factor
         self.current_dir = None 
         
 
@@ -62,7 +62,7 @@ class JMotor:
         else: 
             pass
             
-        time.sleep(0.001*self.speed)
+        time.sleep(0.01*self.speed)
         self.stop()
         self.set_speed(0)
 
@@ -79,7 +79,7 @@ class JMotor:
         lgpio.tx_pwm(self.h, self.ENL, 0, 0.0)
         lgpio.tx_pwm(self.h, self.ENR, 0, 0.0)
 
- # Close GPIO chip
+        # Close GPIO chip
         lgpio.gpiochip_close(self.h)
 
     def stop(self):
