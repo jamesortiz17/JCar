@@ -2,21 +2,16 @@ import time
 from JMotor import JMotor
 from Gyro import Gyro
 from JServo import JServo
-from Screen import Screen
+from Screen import screen_print
 
 motor = JMotor()
 servo = JServo()
 gyro = Gyro()
-screen = Screen()
 
-servo.fullleft()
-screen.screen_data(gyro.screen)
-time.sleep(2)
-motor.turn_right()
-gyro.desired_turn(90)
-motor.stop()
+screen_print("hi", 'hello')
+motor.forward()
+motor.turn("right", 90)
 motor.cleanup()
-servo.cleanup()
 
 
     
