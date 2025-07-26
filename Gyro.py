@@ -11,19 +11,13 @@ class Gyro:
         
         while self.sensor.euler is None:
             time.sleep(0.1)
-        
-    def heading(self):
-        heading = self.sensor.euler[0]
-        if heading is None:
-            return 0
-        return heading
 
     def format_vector(self, label, vec):
         if vec is None:
             return f"{label}: None"
         return f"{label}: x={vec[0]:.2f}, y={vec[1]:.2f}, z={vec[2]:.2f}"
 
-    def get_heading(self):
+    def heading(self):
         mag = self.sensor.magnetic
         if mag is None:
             return None
@@ -36,24 +30,39 @@ class Gyro:
 
     def print_vals(self):
         
-        print("Temperature:", self.sensor.temperature, "°C")
-        print(self.format_vector("Accelerometer", self.sensor.acceleration))
-        print(self.format_vector("Magnetometer", self.sensor.magnetic))
-        print(self.format_vector("Gyroscope", self.sensor.gyro))
-        print(self.format_vector("Euler Angles", self.sensor.euler))
-        print(self.format_vector("Quaternion", self.sensor.quaternion))
-        print(self.format_vector("Linear Acceleration", self.sensor.linear_acceleration))
-        print(self.format_vector("Gravity Vector", self.sensor.gravity))
-        time.sleep(1)
-        
-    def desired_turn(self, target_degrees):
-        start_angle = self.get_angle()
-    
         while True:
-            current_angle = self.get_angle()
-            theta = (current_angle - start_angle + 360) % 360
-            
-            if theta >= target_degrees:
+            print("Temperature:", self.sensor.temperature, "°C")
+            print(self.format_vector("Accelerometer", self.sensor.acceleration))
+            print(self.format_vector("Magnetometer", self.sensor.magnetic))
+            print(self.format_vector("Gyroscope", self.sensor.gyro))
+            print(self.format_vector("Euler Angles", self.sensor.euler))
+            print(self.format_vector("Quaternion", self.sensor.quaternion))
+            print(self.format_vector("Linear Acceleration", self.sensor.linear_acceleration))
+            print(self.format_vector("Gravity Vector", self.sensor.gravity))
+            time.sleep(1)
+        
+    def desired_turn(self, target_deg):
+        start_heading = self.heading()
+        print(f"Start heading: {start_heading}")
+
+        while True:
+            current_heading = self.heading()
+        # Calculate how much we've turned (0 to 360)
+            turned = (current_heading - start_heading + 360) % 360
+            print(f"Current heading: {current_heading}, Turned: {turned:.2f}°")
+
+            if turned >= target_deg:
+                print("Target reached!")
                 break
-            
-            time.sleep(0.01)  
+
+            time.sleep(0.01)  # small delay to avoid hogging CPU
+
+    def test_gyro_heading(gyro):
+        print("Rotate the robot slowly, press Ctrl+C to stop")
+        try:
+            while True:
+                h = gyro.heading()
+                print(f"Heading: {h:.2f}°")
+                time.sleep(0.5)
+        except KeyboardInterrupt:
+            print("Stopped")
