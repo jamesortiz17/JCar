@@ -8,10 +8,16 @@ motor = JMotor()
 servo = JServo()
 gyro = Gyro()
 
-screen_print("hi", 'hello')
-motor.forward()
-motor.turn("right", 90)
-motor.cleanup()
+
+
+gyro.test_gyro_heading()
+
+#screen_print("hi", 'hello')
+#motor.forward()
+#time.sleep(1)
+#motor.chat_turn("right", 90)
+#print("done")
+#motor.cleanup()
 
 
     

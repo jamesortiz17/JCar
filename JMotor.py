@@ -1,5 +1,6 @@
 import lgpio
 import time
+from Gyro import Gyro
 
 class JMotor:
     def __init__(self):
@@ -10,11 +11,11 @@ class JMotor:
         self.INR1 = 20
         self.INR2 = 16
         self.ENR = 21
-        self.speed = 50 #percent duty cycle
+        self.speed = 40 #percent duty cycle
         self.speed_ms = 1.2 # conversion factor
         self.current_dir = None 
         
-
+        
         # Open GPIO chip
         self.h = lgpio.gpiochip_open(0)
 
@@ -26,6 +27,7 @@ class JMotor:
         self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, self.speed) 
         self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, self.speed)
 
+        self.gyro = Gyro()
      
     def set_speed(self, speed):
         self.speed = speed
@@ -88,28 +90,67 @@ class JMotor:
         lgpio.gpio_write(self.h, self.INR1, 0)
         lgpio.gpio_write(self.h, self.INR2, 0)
         
-    def turn_right(self):
+    def turn(self, dir, deg):
+        if dir == "right":
+            lgpio.gpio_write(self.h, self.INL1, 1)
+            lgpio.gpio_write(self.h, self.INL2, 0)
+            self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, 30) 
         
-        lgpio.gpio_write(self.h, self.INL1, 1)
-        lgpio.gpio_write(self.h, self.INL2, 0)
-        self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, 30) 
+            lgpio.gpio_write(self.h, self.INR1, 0)
+            lgpio.gpio_write(self.h, self.INR2, 1)
+            self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, 50)
+            
+        elif dir =="left":
         
-        lgpio.gpio_write(self.h, self.INR1, 0)
-        lgpio.gpio_write(self.h, self.INR2, 1)
-        self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, 50)
+            lgpio.gpio_write(self.h, self.INL1, 0)
+            lgpio.gpio_write(self.h, self.INL2, 1)
+            self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, 50) 
         
-    def turn_left(self):
+            lgpio.gpio_write(self.h, self.INR1, 1)
+            lgpio.gpio_write(self.h, self.INR2, 0)
+            self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, 30)
         
-        lgpio.gpio_write(self.h, self.INL1, 0)
-        lgpio.gpio_write(self.h, self.INL2, 1)
-        self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, 50) 
-        
-        lgpio.gpio_write(self.h, self.INR1, 1)
-        lgpio.gpio_write(self.h, self.INR2, 0)
-        self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, 30)
-        
+        self.gyro.desired_turn(deg)
+        self.stop()
+        self.set_speed(50)
     
-        
+    def chat_turn(self, dir, deg):
+        print(f"Starting turn {dir} by {deg} degrees")
+
+    # Set motor directions and speeds for turning
+        if dir == "right":
+            lgpio.gpio_write(self.h, self.INL1, 1)
+            lgpio.gpio_write(self.h, self.INL2, 0)
+            self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, 30)
+
+            lgpio.gpio_write(self.h, self.INR1, 0)
+            lgpio.gpio_write(self.h, self.INR2, 1)
+            self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, 30)
+
+        elif dir == "left":
+            lgpio.gpio_write(self.h, self.INL1, 0)
+            lgpio.gpio_write(self.h, self.INL2, 1)
+            self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, 30)
+
+            lgpio.gpio_write(self.h, self.INR1, 1)
+            lgpio.gpio_write(self.h, self.INR2, 0)
+            self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, 30)
+
+        else:
+            print("Invalid turn direction! Use 'left' or 'right'.")
+            return
+
+        time.sleep(0.1)  # small delay to let motors start spinning
+
+        try:
+            self.gyro.desired_turn(deg)
+        except Exception as e:
+            print(f"Error during turn: {e}")
+
+        self.stop()
+        self.set_speed(50)
+        print("Turn complete")
+
          
         
         

@@ -39,9 +39,8 @@ def lcd_string(message, line):
     lcd_byte(line, LCD_CMD)
     for i in range(LCD_WIDTH):
         lcd_byte(ord(message[i]), LCD_CHR)
-
-# --- Main program ---
-def main():
+        
+def lcd_init():
     lcd_byte(0x33, LCD_CMD)  # Initialization
     lcd_byte(0x32, LCD_CMD)
     lcd_byte(0x06, LCD_CMD)
@@ -50,11 +49,9 @@ def main():
     lcd_byte(0x01, LCD_CMD)
     time.sleep(0.0005)
 
-    lcd_string("Robot", LCD_LINE_1)
-    lcd_string("Ortiz", LCD_LINE_2)
+def screen_print(line1, line2):
+    lcd_init()
+    lcd_string(line1, LCD_LINE_1)
+    lcd_string(line2, LCD_LINE_2)
 
-    while True:
-        time.sleep(1)
 
-if __name__ == '__main__':
-    main()
