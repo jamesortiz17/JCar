@@ -1,68 +1,82 @@
 import time
+import math
+from collections import deque
 import board
 import busio
 import adafruit_bno055
-import math
+
 
 class Gyro:
-    def __init__(self):
+    def __init__(self, wait_for_calibration=False):
         i2c = busio.I2C(board.SCL, board.SDA)
         self.sensor = adafruit_bno055.BNO055_I2C(i2c)
-        
+
+        # Wait until sensor starts returning valid data
         while self.sensor.euler is None:
             time.sleep(0.1)
 
-    def format_vector(self, label, vec):
-        if vec is None:
-            return f"{label}: None"
-        return f"{label}: x={vec[0]:.2f}, y={vec[1]:.2f}, z={vec[2]:.2f}"
+        if wait_for_calibration:
+            print("Waiting for gyro calibration...")
+            while not self.is_calibrated():
+                sys, gyro, accel, mag = self.sensor.calibration_status
+                print(f"Calib status - Sys:{sys}, Gyro:{gyro}, Accel:{accel}, Mag:{mag}")
+                time.sleep(0.5)
+            print("Calibration complete.")
 
-    def heading(self):
-        mag = self.sensor.magnetic
-        if mag is None:
-            return None
-        x, y, z = mag
-        heading_rad = math.atan2(y, x)
-        heading_deg = math.degrees(heading_rad)
-        if heading_deg < 0:
-            heading_deg += 360
-        return heading_deg
+    def euler_heading(self):
+        heading = self.sensor.euler[0]
+        return heading if heading is not None else 0.0
 
-    def print_vals(self):
-        
-        while True:
-            print("Temperature:", self.sensor.temperature, "°C")
-            print(self.format_vector("Accelerometer", self.sensor.acceleration))
-            print(self.format_vector("Magnetometer", self.sensor.magnetic))
-            print(self.format_vector("Gyroscope", self.sensor.gyro))
-            print(self.format_vector("Euler Angles", self.sensor.euler))
-            print(self.format_vector("Quaternion", self.sensor.quaternion))
-            print(self.format_vector("Linear Acceleration", self.sensor.linear_acceleration))
-            print(self.format_vector("Gravity Vector", self.sensor.gravity))
-            time.sleep(1)
-        
-    def desired_turn(self, target_deg):
-        start_heading = self.heading()
-        print(f"Start heading: {start_heading}")
+    def is_calibrated(self):
+        _, gyro, _, _ = self.sensor.calibration_status
+        return gyro == 3
 
-        while True:
-            current_heading = self.heading()
-        # Calculate how much we've turned (0 to 360)
-            turned = (current_heading - start_heading + 360) % 360
-            print(f"Current heading: {current_heading}, Turned: {turned:.2f}°")
+    def normalize_angle(self, angle):
+        """Wrap angle to [0, 360)."""
+        return angle % 360
 
-            if turned >= target_deg:
-                print("Target reached!")
-                break
+    def angle_difference(self, a, b):
+        """Shortest signed difference between two angles in degrees."""
+        diff = (a - b + 180) % 360 - 180
+        return diff
 
-            time.sleep(0.01)  # small delay to avoid hogging CPU
+    def average_angles(self, angles):
+        """Circular mean of angles."""
+        sin_sum = sum(math.sin(math.radians(a)) for a in angles)
+        cos_sum = sum(math.cos(math.radians(a)) for a in angles)
+        return math.degrees(math.atan2(sin_sum, cos_sum)) % 360
 
-    def test_gyro_heading(gyro):
-        print("Rotate the robot slowly, press Ctrl+C to stop")
+    def turn_to(self, direction, degrees, smoothing_window=5):
+        if direction.lower() not in ['left', 'right']:
+            raise ValueError("Direction must be 'left' or 'right'")
+
+        start_heading = self.euler_heading()
+        readings = deque([start_heading], maxlen=smoothing_window)
+
+        if direction.lower() == 'right':
+            target_heading = self.normalize_angle(start_heading + degrees)
+        else:
+            target_heading = self.normalize_angle(start_heading - degrees)
+
+        print(f"Start Heading: {start_heading:.2f}° | Target: {target_heading:.2f}°")
+
         try:
             while True:
-                h = gyro.heading()
-                print(f"Heading: {h:.2f}°")
-                time.sleep(0.5)
+                current_heading = self.euler_heading()
+                readings.append(current_heading)
+                smoothed = self.average_angles(readings)
+
+                delta = self.angle_difference(smoothed, start_heading)
+                delta = abs(delta)
+
+                print(f"Smoothed Heading: {smoothed:.2f}°  (Raw: {current_heading:.2f}°)")
+
+                if delta >= degrees:
+                    break
+
+                time.sleep(0.05)
+
+            print("Turn complete.")
+
         except KeyboardInterrupt:
-            print("Stopped")
+            print("\nTurn interrupted.")

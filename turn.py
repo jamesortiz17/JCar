@@ -9,8 +9,8 @@ servo = JServo()
 gyro = Gyro()
 
 
+motor.chat_turn("right",90)
 
-gyro.test_gyro_heading()
 
 #screen_print("hi", 'hello')
 #motor.forward()
