@@ -46,35 +46,30 @@ class Gyro:
         cos_sum = sum(math.cos(math.radians(a)) for a in angles)
         return math.degrees(math.atan2(sin_sum, cos_sum)) % 360
 
-    def turn_to(self, direction, degrees, smoothing_window=5):
+    def turn_to(self, direction, degrees):
         if direction.lower() not in ['left', 'right']:
             raise ValueError("Direction must be 'left' or 'right'")
 
         start_heading = self.euler_heading()
-        readings = deque([start_heading], maxlen=smoothing_window)
 
         if direction.lower() == 'right':
             target_heading = self.normalize_angle(start_heading + degrees)
         else:
             target_heading = self.normalize_angle(start_heading - degrees)
 
-        print(f"Start Heading: {start_heading:.2f}° | Target: {target_heading:.2f}°")
+        #print(f"Start Heading: {start_heading:.2f}° | Target: {target_heading:.2f}°")
 
         try:
             while True:
                 current_heading = self.euler_heading()
-                readings.append(current_heading)
-                smoothed = self.average_angles(readings)
+                delta = abs(self.angle_difference(current_heading, start_heading))
 
-                delta = self.angle_difference(smoothed, start_heading)
-                delta = abs(delta)
-
-                print(f"Smoothed Heading: {smoothed:.2f}°  (Raw: {current_heading:.2f}°)")
+                print(f"Current Heading: {current_heading:.2f}°")
 
                 if delta >= degrees:
                     break
 
-                time.sleep(0.05)
+                time.sleep(0.01)
 
             print("Turn complete.")
 

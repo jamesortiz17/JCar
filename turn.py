@@ -3,13 +3,17 @@ from JMotor import JMotor
 from Gyro import Gyro
 from JServo import JServo
 from Screen import screen_print
+from encodertest import JEncoder
 
 motor = JMotor()
 servo = JServo()
 gyro = Gyro()
+enc = JEncoder()
 
+motor.forward()
+enc.print_counts()
 
-motor.chat_turn("right",90)
+#motor.turn("right",90)
 
 
 #screen_print("hi", 'hello')
