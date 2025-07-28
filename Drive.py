@@ -17,6 +17,7 @@ class Drive:
         if direction == "right":
             target_heading = self.gyro.normalize_angle(start_heading + degrees)
             # Motor config for right turn
+            self.servo.turn_right()
             self.motor.set_left_motor(True, 30)
             self.motor.set_right_motor(False, 30)
         else:
