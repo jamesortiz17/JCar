@@ -10,7 +10,7 @@ gyro = Gyro()
 
 
 
-gyro.test_gyro_heading()
+gyro.turn_to("right", 90)
 
 #screen_print("hi", 'hello')
 #motor.forward()
