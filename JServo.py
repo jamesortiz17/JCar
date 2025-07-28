@@ -6,7 +6,7 @@ class JServo:
         self.pin = pin
         self.frequency = frequency
         self.tick = tick
-        self.middle_pulse = 1620
+        self.middle_pulse = 1500
         self.maxleft_pulse = 2500
         self.maxright_pulse = 500
         self.pulse_width = self.middle_pulse
