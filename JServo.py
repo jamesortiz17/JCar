@@ -47,8 +47,9 @@ class JServo:
         self.set_pulse(self.pulse_width)
 
     def cleanup(self):
-        self.center()
-        sleep(0.5)
-        #lgpio.tx_pwm(self.h, self.pin, self.frequency, 0)
-        lgpio.gpiochip_close(self.h)
+        self.center()             # Move servo to center position first
+        sleep(0.5)               # Wait for servo to physically reach center
+        lgpio.tx_pwm(self.h, self.pin, self.frequency, 0)  # Stop PWM signal to release torque
+        lgpio.gpiochip_close(self.h)                      # Close gpiochip
         print("Servo cleanup complete")
+
