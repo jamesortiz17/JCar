@@ -1,8 +1,8 @@
 import time
-from JMotor import JMotor
-from Encoder import DistanceEncoder
-from JServo import JServo
-from Gyro import Gyro
+from foundations.Motor import JMotor
+from foundations.Encoder import DistanceEncoder
+from foundations.Servo import JServo
+from foundations.Gyro import Gyro
 
 def main():
     print("Initializing components...")

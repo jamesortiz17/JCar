@@ -1,18 +1,23 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import json
 import os
 from time import sleep
-from Drive import Drive
-from Encoder import DistanceEncoder
+from foundations.Drive import Drive
+from foundations.Encoder import DistanceEncoder
 
 drive = Drive()         # This wraps motor, servo, gyro
-encoder = DistanceEncoder()
 
+     # Enable PWM timer by starting motors slowly
 path = []
-
-print("Starting path recording. Robot will drive forward. Enter 'L <deg>', 'R <deg>', or 'STOP'")
-drive.forward()
-encoder.reset_counts()
 drive.servo.center()
+sleep(1)
+print("Starting path recording. Robot will drive forward. Enter 'L <deg>', 'R <deg>', or 'STOP'")
+drive.encoder.reset_counts()
+drive.forward()
+
 
 try:
     while True:
@@ -34,7 +39,7 @@ try:
 
                 # Stop and record forward distance
                 drive.stop()
-                left_dist, right_dist = encoder.get_distances_cm()
+                left_dist, right_dist = drive.encoder.get_distances_cm()
                 avg_dist = (left_dist + right_dist) / 2
                 path.append({"action": "forward", "distance_cm": avg_dist})
 
@@ -55,7 +60,7 @@ try:
                     "end_heading": end_heading
                 })
 
-                encoder.reset_counts()
+                drive.encoder.reset_counts()
                 drive.servo.center()
                 drive.forward()
                 continue
@@ -65,10 +70,8 @@ try:
 except KeyboardInterrupt:
     print("\nInterrupted. Stopping robot.")
 
-drive.stop()
-drive.servo.center()
 drive.cleanup()
-encoder.close()
+
 
 filename = input("Enter a filename to save this path (no extension): ").strip()
 os.makedirs("paths", exist_ok=True)

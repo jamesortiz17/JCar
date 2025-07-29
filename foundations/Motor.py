@@ -2,7 +2,8 @@ import lgpio
 import time
 
 class JMotor:
-    def __init__(self):
+    def __init__(self, h):
+        self.h = h
         self.INL1 = 17
         self.INL2 = 27
         self.ENL = 22
@@ -11,13 +12,12 @@ class JMotor:
         self.ENR = 21
         self.speed = 15  # percent duty cycle
         self.current_dir = None
-        
-        self.h = lgpio.gpiochip_open(0)
+
         for pin in [self.INL1, self.INL2, self.ENL, self.INR1, self.INR2, self.ENR]:
             lgpio.gpio_claim_output(self.h, pin, 0)
 
-        self.motorL = lgpio.tx_pwm(self.h, self.ENL, 1000, 0)
-        self.motorR = lgpio.tx_pwm(self.h, self.ENR, 1000, 0)
+        lgpio.tx_pwm(self.h, self.ENL, 1000, 0)
+        lgpio.tx_pwm(self.h, self.ENR, 1000, 0)
 
     def set_speed(self, speed):
         self.speed = speed
@@ -64,4 +64,4 @@ class JMotor:
 
     def cleanup(self):
         self.stop()
-        lgpio.gpiochip_close(self.h)
+      

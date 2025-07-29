@@ -1,10 +1,10 @@
 import lgpio
 
 class DistanceEncoder:
-    def __init__(self, 
+    def __init__(self, h,
                  r_pin_a=6, r_pin_b=5, l_pin_a=13, l_pin_b=12,
                  wheel_circumference_cm=28.8, counts_per_rev=1928):
-        self.gpio = lgpio.gpiochip_open(0)
+        self.gpio = h
 
         self.r_pin_a = r_pin_a
         self.r_pin_b = r_pin_b
@@ -91,4 +91,4 @@ class DistanceEncoder:
         self.cb_right_b.cancel()
         self.cb_left_a.cancel()
         self.cb_left_b.cancel()
-        lgpio.gpiochip_close(self.gpio)
+       

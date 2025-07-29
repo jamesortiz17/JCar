@@ -1,7 +1,7 @@
 import json
 import time
-from Drive import drive_cm
-from Gyro import turn_to
+from foundations.Drive import drive_cm
+from foundatins.Gyro import turn_to
 
 # --- MAIN REPLAYER ---
 def replay_path():
