@@ -2,18 +2,16 @@ import lgpio
 from time import sleep
 
 class JServo:
-    def __init__(self, h, pin=15, frequency=50, tick=50):
+    def __init__(self, h, pin=18, frequency=50):
         self.h = h
         self.pin = pin
         self.frequency = frequency
-        self.tick = tick
         self.middle_pulse = 1610
-        self.maxleft_pulse = 2500
-        self.maxright_pulse = 500
-        self.pulse_width = self.middle_pulse
+        self.maxleft_pulse = 2200
+        self.maxright_pulse = 1020
 
         lgpio.gpio_claim_output(self.h, self.pin, 0)
-        self.set_pulse(self.pulse_width)
+        self.center()
 
     def pulse_to_dutycycle(self, pulse_us):
         period_us = 1_000_000 / self.frequency
@@ -24,23 +22,15 @@ class JServo:
         lgpio.tx_pwm(self.h, self.pin, self.frequency, duty_cycle)
 
     def center(self):
-        self.pulse_width = self.middle_pulse
-        self.set_pulse(self.pulse_width)
-
+        self.set_pulse(self.middle_pulse)
 
     def turn_right(self):
-        self.pulse_width = max(self.maxright_pulse, self.pulse_width - self.tick)
-        self.set_pulse(self.pulse_width)
+        self.set_pulse(self.maxright_pulse)
 
     def turn_left(self):
-        self.pulse_width = min(self.maxleft_pulse, self.pulse_width + self.tick)
-        self.set_pulse(self.pulse_width)
+        self.set_pulse(self.maxleft_pulse)
 
     def cleanup(self):
         self.center()
         sleep(0.5)
         lgpio.tx_pwm(self.h, self.pin, self.frequency, 0)
-       
-
-
-

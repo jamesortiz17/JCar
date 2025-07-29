@@ -34,3 +34,21 @@ class Gyro:
     def angle_difference(self, a, b):
         diff = (a - b + 180) % 360 - 180
         return diff
+
+    def mag_heading(self):
+        """
+        Calculate heading (0-360 degrees) from magnetometer readings.
+        Uses atan2 of magnetic Y and X axes.
+        """
+        mag = self.sensor.magnetic  # returns (x, y, z) or None if no data
+
+        if mag is None:
+            return None
+
+        x, y, _ = mag
+        heading_rad = math.atan2(y, x)
+        heading_deg = math.degrees(heading_rad)
+        if heading_deg < 0:
+            heading_deg += 360
+
+        return heading_deg
