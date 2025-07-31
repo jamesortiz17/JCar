@@ -1,10 +1,11 @@
 import time
 import lgpio
-from .Motor import JMotor
-from .Gyro import Gyro
-from .Servo import JServo
-from .Encoder import DistanceEncoder
-from .Dist import JDist
+from Motor import JMotor
+from Gyro import Gyro
+from Servo import JServo
+from Encoder import DistanceEncoder
+from Dist import JDist
+
 
 class Drive:
     def __init__(self):
@@ -13,7 +14,10 @@ class Drive:
         self.servo = JServo(self.h)
         self.gyro = Gyro()
         self.encoder = DistanceEncoder(self.h)
-        self.dist = JDist(self.h, front_pins=(23, 24), left_pins=(18, 23), right_pins=(22, 5))
+        self.dist = JDist(self.h)  
+        self.last_veering_direction = None
+        self.veer_repeat_count = 0
+
 
     def forward(self):
         self.motor.forward()
@@ -24,34 +28,39 @@ class Drive:
     def stop(self):
         self.motor.stop()
 
-    def maintain_center(self, check_interval=0.2, max_correction_time=2.0):
-        """
-        Continuously checks for veering using distance sensors,
-        adjusts steering if veering is detected, and stops when stable.
-        """
+    def maintain_center(self, check_interval=0.2, max_correction_time=0.5):
         self.dist.update()
         direction = self.dist.veering_trend()
-        if direction is None:
+
+        if direction != self.last_veering_direction:
+            self.veer_repeat_count = 1
+            self.last_veering_direction = direction
+        else:
+            self.veer_repeat_count += 1
+
+        # Only correct if trend repeated a few times
+        if self.veer_repeat_count < 3 or direction is None:
             self.servo.center()
-            print("No veering. Staying centered.")
+            print("Centered or not consistently veering.")
             return
 
-        print(f"Veering {direction}. Adjusting heading.")
+        print(f"Veering {direction}. Applying gentle correction.")
         if direction == "left":
-            self.servo.turn_right()
+            self.servo.slight_right()
         elif direction == "right":
-            self.servo.turn_left()
+            self.servo.slight_left()
 
         start_time = time.time()
         while time.time() - start_time < max_correction_time:
             time.sleep(check_interval)
             self.dist.update()
-
             if self.dist.side_stable():
                 print("Wall alignment stabilized. Re-centering steering.")
                 break
 
         self.servo.center()
+
+
 
     def turn_to(self, direction, degrees):
         if direction.lower() not in ['left', 'right']:

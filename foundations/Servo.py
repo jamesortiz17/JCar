@@ -9,28 +9,38 @@ class JServo:
         self.middle_pulse = 1610
         self.maxleft_pulse = 2200
         self.maxright_pulse = 1020
-
+        self.current_pulse = None
         lgpio.gpio_claim_output(self.h, self.pin, 0)
         self.center()
 
     def pulse_to_dutycycle(self, pulse_us):
         period_us = 1_000_000 / self.frequency
-        return (pulse_us / period_us) * 100
+        return 100 * pulse_us / period_us
 
     def set_pulse(self, pulse_us):
+        if self.current_pulse == pulse_us:
+            return  # Skip redundant write
+        self.current_pulse = pulse_us
         duty_cycle = self.pulse_to_dutycycle(pulse_us)
         lgpio.tx_pwm(self.h, self.pin, self.frequency, duty_cycle)
 
     def center(self):
         self.set_pulse(self.middle_pulse)
 
-    def turn_right(self):
-        self.set_pulse(self.maxright_pulse)
+    def slight_left(self):
+        self.set_pulse(self.middle_pulse + 100)
+
+    def slight_right(self):
+        self.set_pulse(self.middle_pulse - 100)
 
     def turn_left(self):
         self.set_pulse(self.maxleft_pulse)
+
+    def turn_right(self):
+        self.set_pulse(self.maxright_pulse)
 
     def cleanup(self):
         self.center()
         sleep(0.5)
         lgpio.tx_pwm(self.h, self.pin, self.frequency, 0)
+        lgpio.gpio_free(self.h, self.pin)
