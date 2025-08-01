@@ -6,17 +6,28 @@ class JServo:
         self.h = h
         self.pin = pin
         self.frequency = frequency
-        self.middle_pulse = 1590
+        self.middle_pulse = 1580
         self.maxleft_pulse = 2200
         self.maxright_pulse = 1020
         self.current_pulse = None
         lgpio.gpio_claim_output(self.h, self.pin, 0)
         self.center()
+        self.current_offset = 0  # track current offset from center
 
     def pulse_to_dutycycle(self, pulse_us):
         period_us = 1_000_000 / self.frequency
         return 100 * pulse_us / period_us
 
+    def set_offset(self, offset):
+            """Set servo position relative to center pulse."""
+            # clamp offset within servo limits relative to center
+            max_left_offset = self.maxleft_pulse - self.middle_pulse
+            max_right_offset = self.maxright_pulse - self.middle_pulse
+            offset = max(min(offset, max_left_offset), max_right_offset)
+            self.current_offset = offset
+            self.adjust_to(offset)
+            return self.middle_pulse + offset  # return actual pulse sent
+            
     def set_pulse(self, pulse_us):
         if self.current_pulse == pulse_us:
             return  # Skip redundant write
