@@ -1,4 +1,4 @@
-import lgpio
+import lgpio 
 from time import sleep
 
 class JServo:
@@ -6,7 +6,7 @@ class JServo:
         self.h = h
         self.pin = pin
         self.frequency = frequency
-        self.middle_pulse = 1610
+        self.middle_pulse = 1590
         self.maxleft_pulse = 2200
         self.maxright_pulse = 1020
         self.current_pulse = None
@@ -38,6 +38,14 @@ class JServo:
 
     def turn_right(self):
         self.set_pulse(self.maxright_pulse)
+
+    def adjust_to(self, pulse_delta):
+        target_pulse = self.middle_pulse + pulse_delta
+        target_pulse = max(min(target_pulse, self.maxleft_pulse), self.maxright_pulse)
+        print(f"Setting servo pulse to {target_pulse} (delta {pulse_delta})")
+        self.set_pulse(target_pulse)
+
+
 
     def cleanup(self):
         self.center()

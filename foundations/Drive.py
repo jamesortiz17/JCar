@@ -1,10 +1,10 @@
 import time
 import lgpio
-from Motor import JMotor
-from Gyro import Gyro
-from Servo import JServo
-from Encoder import DistanceEncoder
-from Dist import JDist
+from .Motor import JMotor
+from .Gyro import Gyro
+from .Servo import JServo
+from .Encoder import DistanceEncoder
+from .Dist import JDist
 
 
 class Drive:
@@ -17,7 +17,6 @@ class Drive:
         self.dist = JDist(self.h)  
         self.last_veering_direction = None
         self.veer_repeat_count = 0
-
 
     def forward(self):
         self.motor.forward()
@@ -60,13 +59,12 @@ class Drive:
 
         self.servo.center()
 
-
-
     def turn_to(self, direction, degrees):
         if direction.lower() not in ['left', 'right']:
             raise ValueError("Direction must be 'left' or 'right'")
 
-        start_heading = self.gyro.euler_heading()
+        # Use relative heading from gyro
+        start_heading = self.gyro.get_relative_heading()
         if direction == "right":
             target_heading = self.gyro.normalize_angle(start_heading + degrees)
         else:
@@ -77,7 +75,7 @@ class Drive:
 
         try:
             while True:
-                current_heading = self.gyro.euler_heading()
+                current_heading = self.gyro.get_relative_heading()
                 delta = abs(self.gyro.angle_difference(current_heading, target_heading))
                 print(f"Current Heading: {current_heading:.2f}°, Target: {target_heading:.2f}°, Error: {delta:.2f}°")
 

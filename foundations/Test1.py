@@ -1,19 +1,28 @@
-from Gyro import Gyro
 import time
+from Drive import Drive
 
 def main():
-    gyro = Gyro(wait_for_calibration=True, min_change_deg=0.01)
-
-    print("Zeroed relative heading. Rotate to test.")
-
+    drive = Drive()
     try:
-        while True:
-            heading = gyro.get_heading_if_changed()
-            if heading is not None:
-                print(f"Relative Heading: {heading:.2f}°")
-            time.sleep(0.05)
+        print("Starting forward drive with auto-centering and veering correction...")
+        drive.forward()
+
+        run_time = 20  # seconds to run test
+        start_time = time.time()
+
+        while time.time() - start_time < run_time:
+            drive.maintain_center(check_interval=0.2, max_correction_time=0.3)
+            time.sleep(0.1)
+
+        print("Test run complete. Stopping motors and cleaning up.")
+        drive.stop()
+
     except KeyboardInterrupt:
-        print("Stopped.")
+        print("Interrupted by user. Stopping motors and cleaning up.")
+        drive.stop()
+
+    finally:
+        drive.cleanup()
 
 if __name__ == "__main__":
-    main()
+    main
