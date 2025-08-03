@@ -71,35 +71,5 @@ class JDist:
             for name, sensor in self.sensors.items()
         }
 
-    def veering_trend(self, threshold=1):
-        left_hist = list(self.sensors["left"]["history"])
-        right_hist = list(self.sensors["right"]["history"])
-
-        if len(left_hist) < 3 or len(right_hist) < 3:
-            return None
-
-        delta_left = left_hist[-1] - left_hist[0]
-        delta_right = right_hist[-1] - right_hist[0]
-
-        if delta_left < -threshold and delta_right > threshold:
-            return "left"
-        elif delta_right < -threshold and delta_left > threshold:
-            return "right"
-        return None
-
-    def side_stable(self, tolerance=1.2):
-        left = list(self.sensors["left"]["history"])
-        right = list(self.sensors["right"]["history"])
-
-        if len(left) < 3 or len(right) < 3:
-            return False
-
-        def is_stable(seq):
-            return max(abs(seq[i+1] - seq[i]) for i in range(len(seq)-1)) < tolerance
-
-        return is_stable(left) and is_stable(right)
-
-    def get_history(self, sensor):
-        return list(self.sensors[sensor]["history"]) if sensor in self.sensors else []
 
   
