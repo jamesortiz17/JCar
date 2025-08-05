@@ -39,7 +39,7 @@ class Drive:
             target_heading = self.gyro.normalize_angle(start_heading - degrees)
 
         print(f"Turning {direction} from {start_heading:.2f}° to {target_heading:.2f}°")
-        acceptable_error = 0.1
+        acceptable_error = 0.25
 
         try:
             while True:
