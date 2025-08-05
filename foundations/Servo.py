@@ -12,7 +12,7 @@ class JServo:
         self.current_pulse = None
         lgpio.gpio_claim_output(self.h, self.pin, 0)
         self.center()
-        self.current_offset = 0  # track current offset from center
+        self.current_offset = 0  #current offset from center
 
     def pulse_to_dutycycle(self, pulse_us):
         period_us = 1_000_000 / self.frequency

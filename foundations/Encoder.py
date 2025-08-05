@@ -17,7 +17,7 @@ class DistanceEncoder:
         self.wheel_circumference_cm = wheel_circumference_cm
         self.counts_per_rev = counts_per_rev
 
-        # Claim inputs and alerts
+        #claim inputs and alerts
         lgpio.gpio_claim_input(self.gpio, self.r_pin_a)
         lgpio.gpio_claim_input(self.gpio, self.r_pin_b)
         lgpio.gpio_claim_input(self.gpio, self.l_pin_a)
@@ -78,7 +78,6 @@ class DistanceEncoder:
         right_distance = (self.right_count / self.counts_per_rev) * self.wheel_circumference_cm
         return left_distance, right_distance
 
-    # New method to return updated distance for easy use externally
     def get_updated_distances(self):
         return self.get_distances_cm()
 

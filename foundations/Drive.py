@@ -32,7 +32,7 @@ class Drive:
         if direction.lower() not in ['left', 'right']:
             raise ValueError("Direction must be 'left' or 'right'")
 
-        # Use relative heading from gyro
+        #use relative heading from gyro
         start_heading = self.gyro.get_relative_heading()
         if direction == "right":
             target_heading = self.gyro.normalize_angle(start_heading + degrees)
@@ -115,7 +115,6 @@ class Drive:
                     self._last_correction_time = now
                     self._last_correction_direction = correction_direction
         else:
-            #print("Heading within deadband, holding servo position.")
             pass
 
     def cleanup(self):
@@ -125,7 +124,7 @@ class Drive:
         lgpio.gpiochip_close(self.h)
 
     def turn_to_absolute(self, target_heading):
-        acceptable_error = 0.2  # or whatever you like
+        acceptable_error = 0.2 # error threshold
         direction = 'right' if self.gyro.angle_difference(self.gyro.get_relative_heading(), target_heading) > 0 else 'left'
     
         try:
@@ -145,7 +144,7 @@ class Drive:
                     self.motor.set_left_motor(False, 30)
                     self.motor.set_right_motor(True, 30)
     
-                sleep(0.0075)
+                time.sleep(0.0075)
         finally:
             self.motor.stop()
             self.servo.center()

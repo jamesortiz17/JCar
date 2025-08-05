@@ -1,24 +1,24 @@
 import smbus
 import time
 
-# --- LCD setup constants ---
-I2C_ADDR = 0x27   # Change to 0x3F or other address if needed
-LCD_WIDTH = 16    # Max characters per line
+#setup constants
+I2C_ADDR = 0x27   
+LCD_WIDTH = 16    #max chars per line
 
-LCD_CHR = 1       # Mode - Sending data
-LCD_CMD = 0       # Mode - Sending command
+LCD_CHR = 1       #sending data
+LCD_CMD = 0       #sending command
 
-LCD_LINE_1 = 0x80 # LCD RAM address for the 1st line
-LCD_LINE_2 = 0xC0 # LCD RAM address for the 2nd line
+LCD_LINE_1 = 0x80 #address for line 1
+LCD_LINE_2 = 0xC0 #address for line 2
 
 LCD_BACKLIGHT = 0x08
 
 ENABLE = 0b00000100
 
-# --- Setup bus ---
-bus = smbus.SMBus(1)  # 1 for Raspberry Pi newer models
+#setup bus
+bus = smbus.SMBus(1) 
 
-# --- Functions ---
+
 def lcd_byte(bits, mode):
     bits_high = mode | (bits & 0xF0) | LCD_BACKLIGHT
     bits_low  = mode | ((bits << 4) & 0xF0) | LCD_BACKLIGHT
@@ -41,7 +41,7 @@ def lcd_string(message, line):
         lcd_byte(ord(message[i]), LCD_CHR)
         
 def lcd_init():
-    lcd_byte(0x33, LCD_CMD)  # Initialization
+    lcd_byte(0x33, LCD_CMD) 
     lcd_byte(0x32, LCD_CMD)
     lcd_byte(0x06, LCD_CMD)
     lcd_byte(0x0C, LCD_CMD)

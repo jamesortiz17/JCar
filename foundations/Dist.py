@@ -22,20 +22,20 @@ class JDist:
             lgpio.gpio_claim_output(self.h, trig)
             self.claimed.add(trig)
         except lgpio.error:
-            print(f"[Trig] GPIO {trig} busy — cannot claim for {label}")
+            print(f"[Trig] GPIO {trig} busy cannot claim for {label}")
 
         try:
             lgpio.gpio_claim_input(self.h, echo)
             self.claimed.add(echo)
         except lgpio.error:
-            print(f"[Echo] GPIO {echo} busy — cannot claim for {label}")
+            print(f"[Echo] GPIO {echo} busy cannot claim for {label}")
 
         if trig in self.claimed:
             try:
                 lgpio.gpio_write(self.h, trig, 0)
                 time.sleep(0.05)
             except lgpio.error:
-                print(f"GPIO {trig} write failed — possibly unclaimed")
+                print(f"GPIO {trig} write failed possibly unclaimed")
 
     def _read_distance(self, trig, echo):
         if trig not in self.claimed or echo not in self.claimed:
