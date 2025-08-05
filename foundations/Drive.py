@@ -38,13 +38,13 @@ class Drive:
         else:
             self.veer_repeat_count += 1
 
-        # Only correct if trend repeated a few times
+        #if trend repeated a few times
         if self.veer_repeat_count < 3 or direction is None:
             self.servo.center()
             print("Centered or not consistently veering.")
             return
 
-        print(f"Veering {direction}. Applying gentle correction.")
+        print(f"Veering {direction}. applying correction.")
         if direction == "left":
             self.servo.slight_right()
         elif direction == "right":
@@ -55,7 +55,7 @@ class Drive:
             time.sleep(check_interval)
             self.dist.update()
             if self.dist.side_stable():
-                print("Wall alignment stabilized. Re-centering steering.")
+                print("alignment stabilized. Re-centering.")
                 break
 
         self.servo.center()
@@ -73,7 +73,7 @@ class Drive:
             target_heading = self.gyro.normalize_angle(start_heading - degrees)
 
         print(f"Turning {direction} from {start_heading:.2f}° to {target_heading:.2f}°")
-        acceptable_error = 1.0
+        acceptable_error = 0.1
 
         try:
             while True:
@@ -85,11 +85,9 @@ class Drive:
                     break
 
                 if direction == "right":
-                    self.servo.turn_right()
                     self.motor.set_left_motor(True, 30)
                     self.motor.set_right_motor(False, 30)
                 else:
-                    self.servo.turn_left()
                     self.motor.set_left_motor(False, 30)
                     self.motor.set_right_motor(True, 30)
 
@@ -97,7 +95,7 @@ class Drive:
         finally:
             self.motor.stop()
             self.servo.center()
-            print("Turn complete.")
+            #print("Turn complete.")
 
     def cleanup(self):
         self.motor.cleanup()
