@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import sys
 import os
 import json
@@ -168,5 +167,3 @@ with open(f"Replay_{filename}.py", "w") as f:
     f.write(replay_script)
 
 print(f"Replay script written to Replay_{filename}.py")
-=======
->>>>>>> 86f2fe20a491a3f7ea366e73caa94bc6358d75f9

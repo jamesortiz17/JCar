@@ -27,43 +27,6 @@ class Drive:
     def stop(self):
         self.motor.stop()
 
-<<<<<<< HEAD
-    def maintain_center(self, check_interval=0.2, max_correction_time=0.5):
-        self.dist.update()
-        direction = self.dist.veering_trend()
-
-        if direction != self.last_veering_direction:
-            self.veer_repeat_count = 1
-            self.last_veering_direction = direction
-        else:
-            self.veer_repeat_count += 1
-
-        #if trend repeated a few times
-        if self.veer_repeat_count < 3 or direction is None:
-            self.servo.center()
-            print("Centered or not consistently veering.")
-            return
-
-        print(f"Veering {direction}. applying correction.")
-        if direction == "left":
-            self.servo.slight_right()
-        elif direction == "right":
-            self.servo.slight_left()
-
-        start_time = time.time()
-        while time.time() - start_time < max_correction_time:
-            time.sleep(check_interval)
-            self.dist.update()
-            if self.dist.side_stable():
-                print("alignment stabilized. Re-centering.")
-                break
-
-        self.servo.center()
-
-
-=======
->>>>>>> 86f2fe20a491a3f7ea366e73caa94bc6358d75f9
-
     def turn_to(self, direction, degrees):
         if direction.lower() not in ['left', 'right']:
             raise ValueError("Direction must be 'left' or 'right'")
@@ -76,11 +39,7 @@ class Drive:
             target_heading = self.gyro.normalize_angle(start_heading - degrees)
 
         print(f"Turning {direction} from {start_heading:.2f}° to {target_heading:.2f}°")
-<<<<<<< HEAD
         acceptable_error = 0.1
-=======
-        acceptable_error = 0.2
->>>>>>> 86f2fe20a491a3f7ea366e73caa94bc6358d75f9
 
         try:
             while True:
@@ -104,87 +63,9 @@ class Drive:
             self.servo.center()
             #print("Turn complete.")
 
-    def correct_heading_with_servo(
-        self,
-        correction_threshold=1.0,
-        correction_pulse_amount=8,
-        correction_cooldown=1.5,
-        history_length=5,
-        min_heading_improvement_per_reading=0.02,
-        max_offset=200
-    ):
-        if not hasattr(self, '_heading_history'):
-            self._heading_history = deque(maxlen=history_length)
-            self._last_correction_time = 0
-            self._last_correction_direction = 0
-            self._current_pulse_offset = 0
-
-        heading = self.gyro.get_relative_heading()
-        print(f"Relative Heading: {heading:.2f}°")
-        now = time.time()
-        self._heading_history.append(heading)
-
-        def is_heading_correcting():
-            if len(self._heading_history) < 2:
-                return False
-            diffs = [
-                abs(self._heading_history[i]) - abs(self._heading_history[i + 1])
-                for i in range(len(self._heading_history) - 1)
-            ]
-            avg_improvement = sum(diffs) / len(diffs)
-            print(f"Avg improvement per reading: {avg_improvement:.3f}")
-            return avg_improvement >= min_heading_improvement_per_reading
-
-        if abs(heading) > correction_threshold:
-            if (now - self._last_correction_time) > correction_cooldown:
-                if is_heading_correcting():
-                    print("Heading correcting itself, skipping servo adjustment.")
-                else:
-                    correction_direction = 1 if heading > 0 else -1
-                    if correction_direction != self._last_correction_direction:
-                        print("Correction direction changed, resetting last correction direction")
-
-                    self._current_pulse_offset += correction_pulse_amount * correction_direction
-                    self._current_pulse_offset = max(min(self._current_pulse_offset, max_offset), -max_offset)
-
-                    self.servo.adjust_to(self._current_pulse_offset)
-                    print(f"Applied servo correction of {correction_pulse_amount * correction_direction}, total offset: {self._current_pulse_offset}")
-
-                    self._last_correction_time = now
-                    self._last_correction_direction = correction_direction
-        else:
-            pass
-
     def cleanup(self):
         self.motor.cleanup()
         self.servo.cleanup()
         self.encoder.close()
         lgpio.gpiochip_close(self.h)
-
-    def turn_to_absolute(self, target_heading):
-        acceptable_error = 0.2 # error threshold
-        direction = 'right' if self.gyro.angle_difference(self.gyro.get_relative_heading(), target_heading) > 0 else 'left'
-    
-        try:
-            while True:
-                current = self.gyro.get_relative_heading()
-                error = self.gyro.angle_difference(current, target_heading)
-    
-                if abs(error) <= acceptable_error:
-                    break
-    
-                if error > 0:
-                    self.servo.turn_right()
-                    self.motor.set_left_motor(True, 30)
-                    self.motor.set_right_motor(False, 30)
-                else:
-                    self.servo.turn_left()
-                    self.motor.set_left_motor(False, 30)
-                    self.motor.set_right_motor(True, 30)
-    
-                time.sleep(0.0075)
-        finally:
-            self.motor.stop()
-            self.servo.center()
-            print("Turn complete.")
 

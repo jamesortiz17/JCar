@@ -7,8 +7,8 @@ class JDist:
         self.h = h
         self.sensors = {
             "front": {"trig": 19, "echo": 26, "history": deque(maxlen=5)},
-            "left":  {"trig": 25, "echo": 24, "history": deque(maxlen=10)},
-            "right": {"trig": 23, "echo": 15, "history": deque(maxlen=10)}
+            "left":  {"trig": 25, "echo": 24, "history": deque(maxlen=5)},
+            "right": {"trig": 23, "echo": 15, "history": deque(maxlen=5)}
         }
         self.claimed = set()
         self._setup_all_sensors()
@@ -22,20 +22,20 @@ class JDist:
             lgpio.gpio_claim_output(self.h, trig)
             self.claimed.add(trig)
         except lgpio.error:
-            print(f"[Trig] GPIO {trig} busy cannot claim for {label}")
+            print(f"[Trig] GPIO {trig} busy — cannot claim for {label}")
 
         try:
             lgpio.gpio_claim_input(self.h, echo)
             self.claimed.add(echo)
         except lgpio.error:
-            print(f"[Echo] GPIO {echo} busy cannot claim for {label}")
+            print(f"[Echo] GPIO {echo} busy — cannot claim for {label}")
 
         if trig in self.claimed:
             try:
                 lgpio.gpio_write(self.h, trig, 0)
                 time.sleep(0.05)
             except lgpio.error:
-                print(f"GPIO {trig} write failed possibly unclaimed")
+                print(f"GPIO {trig} write failed — possibly unclaimed")
 
     def _read_distance(self, trig, echo):
         if trig not in self.claimed or echo not in self.claimed:
@@ -71,5 +71,4 @@ class JDist:
             for name, sensor in self.sensors.items()
         }
 
-
-  
+ 
