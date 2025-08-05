@@ -4,7 +4,7 @@ import time
 class JMotor:
     def __init__(self, h):
         self.h = h
-        self.INL1 = 17
+        self.INL1 = 17 # GPIO pins 
         self.INL2 = 27
         self.ENL = 22
         self.INR1 = 20

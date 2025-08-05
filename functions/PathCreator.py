@@ -1,23 +1,26 @@
 import sys
 import os
+import json
+from time import sleep, time
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-import json
-import os
-from time import sleep
 from foundations.Drive import Drive
 from foundations.Encoder import DistanceEncoder
 
-drive = Drive()         # This wraps motor, servo, gyro
-
-     # Enable PWM timer by starting motors slowly
+drive = Drive()
 path = []
+
 drive.servo.center()
 sleep(1)
+
 print("Starting path recording. Robot will drive forward. Enter 'L <deg>', 'R <deg>', or 'STOP'")
+
 drive.encoder.reset_counts()
 drive.forward()
 
+# Initialize zero reference heading at start of run
+zero_heading = drive.gyro.get_relative_heading()
+driving_start_time = time()
 
 try:
     while True:
@@ -26,7 +29,7 @@ try:
 
         if len(parts) == 1 and parts[0].upper() == "STOP":
             drive.stop()
-            left_dist, right_dist = encoder.get_distances_cm()
+            left_dist, right_dist = drive.encoder.get_distances_cm()
             avg_dist = (left_dist + right_dist) / 2
             path.append({"action": "forward", "distance_cm": avg_dist})
             break
@@ -37,41 +40,64 @@ try:
                 direction = "left" if direction_input == "L" else "right"
                 degrees = int(parts[1])
 
-                # Stop and record forward distance
+                # Stop and record distance traveled before turn
                 drive.stop()
                 left_dist, right_dist = drive.encoder.get_distances_cm()
                 avg_dist = (left_dist + right_dist) / 2
                 path.append({"action": "forward", "distance_cm": avg_dist})
 
-                # Record heading before turn
-                start_heading = drive.gyro.euler_heading()
+                # Calculate target heading relative to zero_heading
+                if direction == "right":
+                    target_heading = drive.gyro.normalize_angle(zero_heading + degrees)
+                else:
+                    target_heading = drive.gyro.normalize_angle(zero_heading - degrees)
 
-                # Perform turn (Drive handles motor + gyro + servo)
-                drive.turn_to(direction, degrees)
+                print(f"Turning {direction} from zero reference heading {zero_heading:.2f}° to target heading {target_heading:.2f}°")
 
-                # Record heading after turn
-                end_heading = drive.gyro.euler_heading()
+                # Perform turn
+                # Determine heading offset since gyro may already drifted before turn starts
+                initial_drift = drive.gyro.angle_difference(drive.gyro.get_relative_heading(), zero_heading)
 
+                # Adjust turn angle by subtracting the current offset
+                adjusted_degrees = degrees - initial_drift if direction == "right" else degrees + initial_drift
+
+                print(f"Adjusted turn: {degrees:.2f}° -> {adjusted_degrees:.2f}° (correction: {initial_drift:.2f}°)")
+                drive.turn_to(direction, adjusted_degrees)
+
+
+                # Reset zero reference heading after turn (simulate reset relative heading)
+                zero_heading = drive.gyro.get_relative_heading()
+                # If your gyro class supports reset, call it here, e.g.
+                # drive.gyro.reset_relative_heading()
+
+                # Log turn action with new zero heading
                 path.append({
                     "action": "turn",
                     "direction": direction,
                     "degrees": degrees,
-                    "start_heading": start_heading,
-                    "end_heading": end_heading
+                    "start_heading": zero_heading,
+                    "end_heading": zero_heading
                 })
 
+                # Reset encoder and servo, start moving forward again
                 drive.encoder.reset_counts()
                 drive.servo.center()
                 drive.forward()
+                driving_start_time = time()  # reset driving timer after turn
                 continue
+
+        else:
+            # Maintain heading correction only if driving more than 2 seconds after last turn
+            if time() - driving_start_time > 2:
+                drive.correct_heading_with_servo()
 
         print("Invalid input. Use 'L <deg>', 'R <deg>', or 'STOP'")
 
 except KeyboardInterrupt:
     print("\nInterrupted. Stopping robot.")
+    drive.stop()
 
 drive.cleanup()
-
 
 filename = input("Enter a filename to save this path (no extension): ").strip()
 os.makedirs("paths", exist_ok=True)
@@ -82,37 +108,68 @@ with open(json_path, "w") as f:
 
 print(f"Path saved to {json_path}")
 
-# Auto-generate replay script with timeout
-replay_script = f"""
-from Drive import Drive
-from Encoder import DistanceEncoder
+# -------------------------------------
+# Generate Replay File
+# -------------------------------------
+
+replay_script = f"""import json
 from time import sleep, time
+from foundations.Drive import Drive
+from foundations.Encoder import DistanceEncoder
 
 drive = Drive()
-encoder = DistanceEncoder()
+encoder = DistanceEncoder(drive.h)
 
 with open('{json_path}', 'r') as f:
     path = json.load(f)
 
-for step in path:
-    if step['action'] == 'forward':
-        encoder.reset_counts()
-        drive.forward()
-        target_cm = step['distance_cm']
-        start_time = time()
-        while True:
-            left, right = encoder.get_distances_cm()
-            avg = (left + right) / 2
-            if avg >= target_cm or time() - start_time > 10:
-                break
-            sleep(0.01)
-        drive.stop()
-    elif step['action'] == 'turn':
-        drive.turn_to(step['direction'], step['degrees'])
-        drive.servo.center()
+try:
+    zero_heading = drive.gyro.get_relative_heading()
 
-drive.cleanup()
-encoder.close()
+    for step in path:
+        if step['action'] == 'forward':
+            encoder.reset_counts()
+            drive.forward()
+            target_cm = step['distance_cm']
+            start_time = time()
+            driving_start_time = time()
+
+            while True:
+                left, right = encoder.get_distances_cm()
+                avg = (left + right) / 2
+
+                # Only correct heading after 2 seconds of driving
+                if time() - driving_start_time > 2:
+                    drive.correct_heading_with_servo()
+
+                if avg >= target_cm or time() - start_time > 10:
+                    break
+                sleep(0.01)
+            drive.stop()
+
+        elif step['action'] == 'turn':
+            direction = step['direction']
+            degrees = step['degrees']
+
+            # Calculate target heading relative to zero_heading
+            if direction == 'right':
+                target_heading = drive.gyro.normalize_angle(zero_heading + degrees)
+            else:
+                target_heading = drive.gyro.normalize_angle(zero_heading - degrees)
+
+            print(f"Replaying turn {{direction}} {{degrees}}°, from zero reference heading {{zero_heading:.2f}}° to target heading {{target_heading:.2f}}°")
+
+            drive.turn_to(direction, degrees)
+
+            # Reset zero heading after turn (simulate relative heading reset)
+            zero_heading = drive.gyro.get_relative_heading()
+            # If your gyro class supports reset, call it here, e.g.
+            # drive.gyro.reset_relative_heading()
+
+            drive.servo.center()
+finally:
+    drive.cleanup()
+
 print("Replay complete.")
 """
 

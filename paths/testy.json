@@ -1,0 +1,17 @@
+[
+    {
+        "action": "forward",
+        "distance_cm": 65.66639004149378
+    },
+    {
+        "action": "turn",
+        "direction": "right",
+        "degrees": 90,
+        "start_heading": -1.625,
+        "end_heading": 87.5
+    },
+    {
+        "action": "forward",
+        "distance_cm": 23.990041493775934
+    }
+]

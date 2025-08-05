@@ -13,7 +13,7 @@ class Gyro:
             time.sleep(0.1)
 
         self.initial_heading = self._get_raw_heading()
-        self.prev_heading = 0.0  # relative to initial
+        self.prev_heading = 0.0  #relative to initial
         self.min_change_deg = min_change_deg
 
         if wait_for_calibration:
